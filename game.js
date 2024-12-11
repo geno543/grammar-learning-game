@@ -59,8 +59,43 @@ class SubwayGrammarGame {
         // Share button
         document.getElementById('share-button').addEventListener('click', () => this.shareScore());
 
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+        // Get game area element
+        const gameArea = document.getElementById('game-area');
+
+        // Enhanced keyboard controls with both keydown and keyup events
+        const handleKeyEvent = (e) => {
+            // Prevent default behavior for arrow keys to avoid page scrolling
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter') {
+                e.preventDefault();
+            }
+            this.handleKeyPress(e);
+        };
+
+        // Add event listeners to multiple elements to ensure key events are captured
+        [document, window, gameArea].forEach(element => {
+            element.addEventListener('keydown', handleKeyEvent);
+            // Optional: Add keyup event if you want to handle key release
+            element.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Focus handling with improved reliability
+        const focusGameArea = () => {
+            if (this.isGameRunning && !this.isPaused) {
+                gameArea.focus();
+            }
+        };
+
+        [document, window, gameArea].forEach(element => {
+            element.addEventListener('click', focusGameArea);
+            element.addEventListener('touchstart', focusGameArea);
+        });
+
+        // Focus game area when game starts
+        this.gameArea = gameArea;
         
         // Touch controls for mobile
         let touchStartX = 0;
@@ -189,27 +224,25 @@ class SubwayGrammarGame {
         this.questionsAnswered = 0;
         this.maxStreak = 0;
         this.usedQuestions.clear();
+        this.isGameRunning = true;
 
         // Update display
         this.updateHUD();
-
-        // Initialize game elements if not already initialized
-        if (!this.tracks) {
-            this.initializeGame();
-        }
-        
-        // Reset player position
-        this.initializeGameElements();
-        
-        // Show game screen and start game
         this.showScreen('game-screen');
-        this.generateQuestion();
-        
-        // Start background music
-        if (this.sounds.background) {
-            this.sounds.background.currentTime = 0;
-            this.sounds.background.play().catch(console.error);
+
+        // Focus the game area
+        if (this.gameArea) {
+            setTimeout(() => {
+                this.gameArea.focus();
+            }, 100);
         }
+
+        // Start background music
+        this.sounds.background.currentTime = 0;
+        this.sounds.background.play();
+
+        // Generate first question
+        this.generateQuestion();
         
         // Start timer
         this.timerInterval = setInterval(() => this.updateTimer(), 1000);

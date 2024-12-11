@@ -262,6 +262,18 @@ body {
         inset 0 0 150px rgba(0, 0, 0, 0.9),
         0 0 50px rgba(0, 0, 0, 0.5);
     margin: 5px 0;
+    outline: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    cursor: default;
+    z-index: 10;
+}
+
+#game-area:focus {
+    outline: none;
 }
 
 #tracks {
