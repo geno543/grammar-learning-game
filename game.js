@@ -1,3 +1,5 @@
+// game.js
+
 class SubwayGrammarGame {
     constructor() {
         // Game state
@@ -105,16 +107,16 @@ class SubwayGrammarGame {
 
         // Touch controls for mobile
         let touchStartX = 0;
-        document.removeEventListener('touchstart', this.handleTouchStart);
-        document.addEventListener('touchstart', (e) => {
+        gameArea.removeEventListener('touchstart', this.handleTouchStart);
+        gameArea.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
         });
-        document.removeEventListener('touchmove', this.handleTouchMove);
-        document.addEventListener('touchmove', (e) => {
+        gameArea.removeEventListener('touchmove', this.handleTouchMove);
+        gameArea.addEventListener('touchmove', (e) => {
             if (!this.isGameRunning || this.isPaused) return;
             const touchEndX = e.touches[0].clientX;
             const diffX = touchEndX - touchStartX;
-            
+
             if (Math.abs(diffX) > 50) {
                 if (diffX > 0 && this.currentTrack < 2) {
                     this.movePlayer(this.currentTrack + 1);
@@ -124,8 +126,8 @@ class SubwayGrammarGame {
                 touchStartX = touchEndX;
             }
         });
-        document.removeEventListener('touchend', this.handleTouchEnd);
-        document.addEventListener('touchend', () => {
+        gameArea.removeEventListener('touchend', this.handleTouchEnd);
+        gameArea.addEventListener('touchend', () => {
             if (this.canAnswer && this.isGameRunning && !this.isPaused) {
                 this.checkAnswer(this.currentTrack);
             }
@@ -478,7 +480,10 @@ class SubwayGrammarGame {
 
     generateQuestion() {
         const currentLevelQuestions = grammarQuestions[`level${this.level}`];
-        if (!currentLevelQuestions) return;
+        if (!currentLevelQuestions) {
+            console.error(`No questions found for level ${this.level}.`);
+            return;
+        }
 
         // Filter out questions that have been used
         const availableQuestions = currentLevelQuestions.filter(q => !this.usedQuestions.has(q.question));
@@ -489,7 +494,7 @@ class SubwayGrammarGame {
             this.currentQuestion = currentLevelQuestions[Math.floor(Math.random() * currentLevelQuestions.length)];
         } else {
             // Select a random question from available questions
-            this.currentQuestion = availableQuestions[Math.floor(Math.random() * availableLevelQuestions.length)];
+            this.currentQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
         }
 
         // Track this question
@@ -500,7 +505,10 @@ class SubwayGrammarGame {
     }
 
     displayQuestion() {
-        if (!this.currentQuestion) return;
+        if (!this.currentQuestion) {
+            console.error('No current question to display.');
+            return;
+        }
         
         const questionText = document.getElementById('question-text');
         const answersContainer = document.getElementById('answers');
@@ -675,4 +683,3 @@ class SubwayGrammarGame {
 window.addEventListener('load', () => {
     new SubwayGrammarGame();
 });
-
