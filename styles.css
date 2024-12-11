@@ -1,0 +1,850 @@
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #2196F3;
+    --accent-color: #FFC107;
+    --background-dark: #1a1a1a;
+    --text-light: #ffffff;
+    --track-width: 100px;
+    --player-size: 35px;
+    --track-spacing: 50px;
+    --track-height: 100%;
+    --track-0-position: calc(50% - var(--track-width) - var(--track-spacing));
+    --track-1-position: 50%;
+    --track-2-position: calc(50% + var(--track-width) + var(--track-spacing));
+    --track-glow: rgba(255, 255, 255, 0.1);
+    --track-active: rgba(255, 193, 7, 0.3);
+    --track-correct: rgba(76, 175, 80, 0.4);
+    --track-wrong: rgba(255, 68, 68, 0.4);
+    --hud-font-size: 14px;
+    --question-font-size: 20px;
+    --answer-font-size: 14px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@keyframes backgroundScroll {
+    from { background-position: 0 0; }
+    to { background-position: 0 600px; }
+}
+
+@keyframes neonPulse {
+    0%, 100% { box-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color), 0 0 15px var(--accent-color); }
+    50% { box-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color), 0 0 30px var(--accent-color); }
+}
+
+@keyframes slideTrack {
+    0% { transform: translateZ(0); }
+    100% { transform: translateZ(-1000px); }
+}
+
+@keyframes playerHover {
+    0%, 100% { transform: translateY(0) translateX(-50%) rotate(0deg); }
+    50% { transform: translateY(-8px) translateX(-50%) rotate(5deg); }
+}
+
+@keyframes questionFade {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes glow {
+    0% { text-shadow: 0 0 5px var(--accent-color); }
+    50% { text-shadow: 0 0 20px var(--accent-color), 0 0 30px var(--accent-color); }
+    100% { text-shadow: 0 0 5px var(--accent-color); }
+}
+
+@keyframes correct-answer {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); background-color: #4CAF50; }
+    100% { transform: scale(1); }
+}
+
+@keyframes wrong-answer {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-10px); background-color: #ff4444; }
+    75% { transform: translateX(10px); background-color: #ff4444; }
+    100% { transform: translateX(0); }
+}
+
+.correct-animation {
+    animation: correct-answer 0.6s ease;
+}
+
+.wrong-animation {
+    animation: wrong-answer 0.6s ease;
+}
+
+body {
+    font-family: 'Press Start 2P', cursive;
+    background: radial-gradient(circle at center, #2a2a2a, var(--background-dark));
+    color: var(--text-light);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#game-screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 10px;
+    gap: 10px;
+    box-sizing: border-box;
+    transform: scale(0.9);
+    transform-origin: top center;
+}
+
+#hud {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 90%;
+    max-width: 700px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 12px;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#hud > div {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    min-width: 90px;
+    justify-content: center;
+    font-size: var(--hud-font-size);
+}
+
+#hud i {
+    margin-right: 6px;
+    font-size: 16px;
+}
+
+#hud span {
+    color: var(--accent-color);
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+}
+
+/* Individual HUD element styles */
+#score i { color: #FFD700; }
+#lives i { 
+    color: #FF4444; 
+    animation: pulse 1.5s infinite;
+}
+#level i { color: #4CAF50; }
+#streak i { color: #FF6B6B; }
+#timer i { color: #64B5F6; }
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Level up animation */
+#level.levelup i {
+    animation: levelup-icon 0.5s ease;
+}
+
+@keyframes levelup-icon {
+    0% { transform: scale(1) rotate(0); }
+    50% { transform: scale(1.5) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+#question-container {
+    position: relative;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 700px;
+    border: 2px solid var(--accent-color);
+    z-index: 3;
+    margin: 5px 0;
+    overflow: hidden;
+}
+
+#question-text {
+    font-size: var(--question-font-size);
+    color: #fff;
+    text-align: center;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+#answers {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    padding: 0 10px;
+}
+
+.answer {
+    flex: 1;
+    min-width: 150px;
+    max-width: 200px;
+    background: linear-gradient(135deg, 
+        rgba(51, 51, 51, 0.95) 0%, 
+        rgba(34, 34, 34, 0.95) 100%
+    );
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: var(--answer-font-size);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.answer:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 193, 7, 0.2) 0%, 
+        rgba(255, 193, 7, 0.1) 100%
+    );
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 20px rgba(255, 193, 7, 0.3),
+        inset 0 0 10px rgba(255, 193, 7, 0.2);
+}
+
+#game-area {
+    width: 90%;
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+    perspective: 800px;
+    background: linear-gradient(180deg, 
+        #000000 0%,
+        #1a1a1a 40%,
+        #000000 100%
+    );
+    border-radius: 15px;
+    box-shadow: 
+        inset 0 0 150px rgba(0, 0, 0, 0.9),
+        0 0 50px rgba(0, 0, 0, 0.5);
+    margin: 5px 0;
+}
+
+#tracks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    transform: rotateX(60deg);
+    transform-style: preserve-3d;
+}
+
+.track {
+    width: 100px;
+    height: 100%;
+    position: relative;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(255, 193, 7, 0.1) 20%,
+        rgba(255, 193, 7, 0.2) 50%,
+        rgba(255, 193, 7, 0.1) 80%,
+        transparent 100%
+    );
+    border-left: 2px solid rgba(255, 193, 7, 0.3);
+    border-right: 2px solid rgba(255, 193, 7, 0.3);
+    transform-style: preserve-3d;
+}
+
+.track::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 50px,
+        rgba(255, 193, 7, 0.2) 50px,
+        rgba(255, 193, 7, 0.2) 100px
+    );
+    animation: moveTrack 2s linear infinite;
+}
+
+@keyframes moveTrack {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100px); }
+}
+
+#player {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    width: 35px;
+    height: 35px;
+    transform-style: preserve-3d;
+    z-index: 2;
+    transition: left 0.3s ease;
+    transform: translateX(-50%);
+}
+
+#player[data-position="0"] { left: calc(50% - 150px); }
+#player[data-position="1"] { left: 50%; }
+#player[data-position="2"] { left: calc(50% + 150px); }
+
+.player-ball {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, 
+        #fff 0%, 
+        #ffc107 60%,
+        #ffa000 100%
+    );
+    border-radius: 50%;
+    box-shadow: 
+        0 0 20px rgba(255, 193, 7, 0.6),
+        0 0 40px rgba(255, 193, 7, 0.4);
+    animation: bounce 0.5s ease-in-out infinite alternate;
+    position: relative;
+}
+
+.player-shadow {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    width: 40px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transform: translateX(-50%) rotateX(60deg);
+    filter: blur(3px);
+    animation: shadowScale 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-20px); }
+}
+
+@keyframes shadowScale {
+    from { 
+        transform: translateX(-50%) rotateX(60deg) scale(1);
+        opacity: 0.4;
+    }
+    to { 
+        transform: translateX(-50%) rotateX(60deg) scale(0.8);
+        opacity: 0.2;
+    }
+}
+
+.track.correct {
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(76, 175, 80, 0.2) 20%,
+        rgba(76, 175, 80, 0.4) 50%,
+        rgba(76, 175, 80, 0.2) 80%,
+        transparent 100%
+    );
+    border-color: rgba(76, 175, 80, 0.6);
+}
+
+.track.wrong {
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(244, 67, 54, 0.2) 20%,
+        rgba(244, 67, 54, 0.4) 50%,
+        rgba(244, 67, 54, 0.2) 80%,
+        transparent 100%
+    );
+    border-color: rgba(244, 67, 54, 0.6);
+}
+
+#controls-hint {
+    position: relative;
+    text-align: center;
+    margin-top: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    z-index: 2;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#menu-screen {
+    background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
+                url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="%232a2a2a"/><path d="M0 50 L100 50" stroke="%23444" stroke-width="2"/></svg>');
+}
+
+#menu-screen h1 {
+    font-size: 3em;
+    text-align: center;
+    line-height: 1.4;
+    animation: glow 2s infinite;
+    margin-bottom: 30px;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+button {
+    padding: 20px 40px;
+    font-size: 18px;
+    font-family: 'Press Start 2P', cursive;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+#game-over-screen {
+    background: radial-gradient(circle at center, 
+        rgba(42, 42, 42, 0.95), 
+        rgba(26, 26, 26, 0.98)
+    );
+    backdrop-filter: blur(10px);
+}
+
+#game-over-screen h2 {
+    font-size: 4em;
+    color: #ff4444;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+    animation: glow 2s infinite;
+}
+
+#final-score {
+    font-size: 2em;
+    margin: 20px 0;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+#stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 30px 0;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+}
+
+.stat {
+    transition: transform 0.3s;
+}
+
+.stat:hover {
+    transform: translateY(-2px);
+}
+
+.explanation {
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(34, 34, 34, 0.95) 100%
+    );
+    color: var(--text-light);
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 1em;
+    text-align: center;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+    opacity: 0;
+    z-index: 100;
+    animation: explanationSlide 0.5s forwards;
+}
+
+@keyframes explanationSlide {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-20px);
+    }
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: particleFade 1s forwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes particleFade {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    #game-screen {
+        transform: scale(0.95);
+    }
+    
+    #game-area {
+        height: 280px;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    :root {
+        --hud-font-size: 12px;
+        --question-font-size: 18px;
+        --answer-font-size: 13px;
+    }
+
+    #game-screen {
+        transform: scale(0.9);
+    }
+
+    #hud {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #hud > div {
+        font-size: var(--hud-font-size);
+        min-width: 80px;
+        padding: 5px 10px;
+    }
+
+    #question-text {
+        font-size: var(--question-font-size);
+    }
+
+    .answer {
+        font-size: var(--answer-font-size);
+        min-width: 130px;
+        padding: 12px;
+    }
+
+    #game-area {
+        height: 250px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    :root {
+        --hud-font-size: 11px;
+        --question-font-size: 16px;
+        --answer-font-size: 12px;
+    }
+
+    #game-screen {
+        transform: scale(0.85);
+        padding: 5px;
+    }
+
+    #hud {
+        width: 95%;
+        padding: 8px;
+    }
+
+    #hud > div {
+        min-width: 70px;
+        padding: 4px 8px;
+    }
+
+    #hud i {
+        font-size: 14px;
+    }
+
+    #question-container {
+        width: 95%;
+        padding: 12px;
+    }
+
+    #answers {
+        gap: 10px;
+    }
+
+    .answer {
+        min-width: 110px;
+        padding: 10px;
+    }
+
+    #game-area {
+        width: 95%;
+        height: 220px;
+    }
+
+    #tracks {
+        gap: 40px;
+    }
+
+    .track {
+        width: 80px;
+    }
+
+    #player {
+        width: 30px;
+        height: 30px;
+    }
+
+    #player[data-position="0"] { left: calc(50% - 120px); }
+    #player[data-position="2"] { left: calc(50% + 120px); }
+}
+
+@media screen and (max-width: 576px) {
+    :root {
+        --hud-font-size: 10px;
+        --question-font-size: 14px;
+        --answer-font-size: 11px;
+    }
+
+    #game-screen {
+        transform: scale(0.8);
+    }
+
+    #hud {
+        width: 98%;
+        padding: 5px;
+        gap: 5px;
+    }
+
+    #hud > div {
+        min-width: 60px;
+        padding: 3px 6px;
+    }
+
+    #hud i {
+        font-size: 12px;
+        margin-right: 4px;
+    }
+
+    #question-container {
+        width: 98%;
+        padding: 10px;
+    }
+
+    #answers {
+        gap: 8px;
+        padding: 0 5px;
+    }
+
+    .answer {
+        min-width: 100px;
+        padding: 8px;
+    }
+
+    #game-area {
+        width: 98%;
+        height: 200px;
+    }
+
+    #tracks {
+        gap: 30px;
+    }
+
+    .track {
+        width: 60px;
+    }
+
+    #player {
+        width: 25px;
+        height: 25px;
+        bottom: 60px;
+    }
+
+    #player[data-position="0"] { left: calc(50% - 90px); }
+    #player[data-position="2"] { left: calc(50% + 90px); }
+}
+
+/* Portrait phones */
+@media screen and (max-width: 380px) {
+    #game-screen {
+        transform: scale(0.75);
+    }
+
+    #hud > div {
+        min-width: 55px;
+        font-size: 9px;
+    }
+
+    .answer {
+        min-width: 90px;
+        padding: 6px;
+    }
+
+    #game-area {
+        height: 180px;
+    }
+
+    #tracks {
+        gap: 25px;
+    }
+
+    .track {
+        width: 50px;
+    }
+
+    #player {
+        width: 20px;
+        height: 20px;
+        bottom: 50px;
+    }
+
+    #player[data-position="0"] { left: calc(50% - 75px); }
+    #player[data-position="2"] { left: calc(50% + 75px); }
+}
+
+@media (max-width: 1200px) {
+    #game-container {
+        width: 90vw;
+        height: 90vh;
+    }
+    
+    .answer {
+        font-size: 14px;
+    }
+    
+    #question-text {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    #hud {
+        grid-template-columns: repeat(2, 1fr);
+        font-size: 14px;
+    }
+    
+    .track {
+        width: calc(var(--track-width) * 0.8);
+    }
+    
+    #player {
+        width: calc(var(--player-size) * 0.8);
+        height: calc(var(--player-size) * 0.8);
+    }
+}
+
+/* Enhanced ground effect */
+#game-area::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
+    pointer-events: none;
+}
+
+/* Track hover effect */
+.track:hover {
+    transform: translateZ(10px);
+    box-shadow: 
+        0 0 40px rgba(255, 255, 255, 0.2),
+        inset 0 0 25px rgba(255, 255, 255, 0.1);
+}
+
+/* Shake animations */
+@keyframes shake {
+    0% { transform: translateX(-50%) rotate(0deg); }
+    25% { transform: translateX(-55%) rotate(-5deg); }
+    50% { transform: translateX(-50%) rotate(5deg); }
+    75% { transform: translateX(-45%) rotate(-5deg); }
+    100% { transform: translateX(-50%) rotate(0deg); }
+}
+
+.shake {
+    animation: shake 0.5s;
+}
+
+@keyframes shake-wrong {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    20% { transform: translateX(-52%) rotate(-10deg); }
+    40% { transform: translateX(-48%) rotate(10deg); }
+    60% { transform: translateX(-52%) rotate(-10deg); }
+    80% { transform: translateX(-48%) rotate(10deg); }
+}
+
+.shake-wrong {
+    animation: shake-wrong 0.5s;
+}
+
+#game-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subway Grammar Runner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- شاشة القائمة الرئيسية -->
+        <div id="menu-screen" class="screen">
+            <h1>Subway Grammar Runner</h1>
+            <div class="menu-buttons">
+                <button id="start-button">Start Game</button>
+                <button id="instructions-button">How to Play</button>
+            </div>
+            <div id="high-score">High Score: <span>0</span></div>
+        </div>
+
+        <!-- شاشة التعليمات -->
+        <div id="instructions-screen" class="screen hidden">
+            <h2>How to Play</h2>
+            <div class="instructions-content">
+                <p> Use LEFT and RIGHT arrow keys to switch tracks</p>
+                <p> Answer grammar questions correctly to score points</p>
+                <p> Collect power-ups for bonuses:</p>
+                <ul>
+                    <li> Red - Extra Life</li>
+                    <li> Green - Score Boost</li>
+                    <li> Blue - Slow Down Time</li>
+                </ul>
+                <p> Build streaks for bonus points!</p>
+            </div>
+            <button id="back-to-menu">Back to Menu</button>
+        </div>
+
+        <!-- شاشة اللعبة -->
+        <div id="game-screen" class="screen hidden">
+            <div id="hud">
+                <div id="score"><i class="fas fa-star"></i> Score: <span>0</span></div>
+                <div id="lives"><i class="fas fa-heart"></i> Lives: <span>3</span></div>
+                <div id="level"><i class="fas fa-trophy"></i> Level: <span>1</span></div>
+                <div id="streak"><i class="fas fa-fire"></i> Streak: <span>0</span></div>
+                <div id="timer"><i class="fas fa-clock"></i> Time: <span>60</span>s</div>
+            </div>
+
+            <div id="question-container">
+                <div id="question-text"></div>
+                <div id="answers">
+                    <!-- سيتم إضافة الإجابات ديناميكيًا -->
+                </div>
+            </div>
+
+            <div id="game-area">
+                <div id="tracks">
+                    <div class="track" data-track="0"></div>
+                    <div class="track" data-track="1"></div>
+                    <div class="track" data-track="2"></div>
+                </div>
+                <div id="player" data-position="1">
+                    <div class="player-ball"></div>
+                    <div class="player-shadow"></div>
+                </div>
+            </div>
+
+            <div id="controls-hint">
+                Use arrow keys to move | Press ENTER to select
+            </div>
+        </div>
+
+        <!-- شاشة الإيقاف المؤقت -->
+        <div id="pause-screen" class="screen hidden">
+            <h2>Paused</h2>
+            <div class="menu-buttons">
+                <button id="resume-button">Resume</button>
+                <button id="quit-button">Quit to Menu</button>
+            </div>
+        </div>
+
+        <!-- شاشة انتهاء اللعبة -->
+        <div id="game-over-screen" class="screen hidden">
+            <h2>Game Over!</h2>
+            <div id="final-score">Score: <span>0</span></div>
+            <div id="stats">
+                <div class="stat">Questions Answered: <span id="questions-answered">0</span></div>
+                <div class="stat">Max Streak: <span id="max-streak">0</span></div>
+                <div class="stat">Level Reached: <span id="final-level">1</span></div>
+            </div>
+            <div class="menu-buttons">
+                <button id="restart-button">Play Again</button>
+                <button id="share-button">Share Score</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
