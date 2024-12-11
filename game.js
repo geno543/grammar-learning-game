@@ -21,6 +21,10 @@ class SubwayGrammarGame {
         this.usedQuestions = new Set();
         this.questionsPerLevel = 3; // Number of questions needed to complete a level
 
+        // Movement control
+        this.canMove = true; // Flag to control movement throttling
+        this.moveCooldown = 300; // Cooldown period in milliseconds between moves
+
         // Initialize DOM elements
         this.initializeDOM();
 
@@ -29,6 +33,9 @@ class SubwayGrammarGame {
 
         // Initialize sounds
         this.initializeSounds();
+
+        // Initialize game elements
+        this.initializeGame();
     }
 
     initializeDOM() {
@@ -73,13 +80,13 @@ class SubwayGrammarGame {
 
         // Add event listeners to multiple elements to ensure key events are captured
         [document, window, gameArea].forEach(element => {
+            // Remove existing listeners to prevent duplicates
+            element.removeEventListener('keydown', handleKeyEvent);
             element.addEventListener('keydown', handleKeyEvent);
-            // Optional: Add keyup event if you want to handle key release
-            element.addEventListener('keyup', (e) => {
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter') {
-                    e.preventDefault();
-                }
-            });
+
+            // Optional: Handle keyup events if needed
+            element.removeEventListener('keyup', this.handleKeyUpEvent);
+            element.addEventListener('keyup', this.handleKeyUpEvent.bind(this));
         });
 
         // Focus handling with improved reliability
@@ -90,18 +97,19 @@ class SubwayGrammarGame {
         };
 
         [document, window, gameArea].forEach(element => {
+            element.removeEventListener('click', focusGameArea);
             element.addEventListener('click', focusGameArea);
+            element.removeEventListener('touchstart', focusGameArea);
             element.addEventListener('touchstart', focusGameArea);
         });
 
-        // Focus game area when game starts
-        this.gameArea = gameArea;
-        
         // Touch controls for mobile
         let touchStartX = 0;
+        document.removeEventListener('touchstart', this.handleTouchStart);
         document.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
         });
+        document.removeEventListener('touchmove', this.handleTouchMove);
         document.addEventListener('touchmove', (e) => {
             if (!this.isGameRunning || this.isPaused) return;
             const touchEndX = e.touches[0].clientX;
@@ -116,11 +124,20 @@ class SubwayGrammarGame {
                 touchStartX = touchEndX;
             }
         });
+        document.removeEventListener('touchend', this.handleTouchEnd);
         document.addEventListener('touchend', () => {
             if (this.canAnswer && this.isGameRunning && !this.isPaused) {
                 this.checkAnswer(this.currentTrack);
             }
         });
+
+        // Store game area for focus
+        this.gameArea = gameArea;
+    }
+
+    handleKeyUpEvent(e) {
+        // Placeholder for any keyup handling if needed
+        // Currently not used
     }
 
     initializeSounds() {
@@ -138,45 +155,6 @@ class SubwayGrammarGame {
         });
     }
 
-    movePlayer(newTrack) {
-        if (newTrack >= 0 && newTrack <= 2 && !this.isPaused && this.isGameRunning) {
-            // Remove active class from all tracks
-            this.tracks.forEach(track => track.classList.remove('active'));
-            
-            // Add active class to new track
-            this.tracks[newTrack].classList.add('active');
-            
-            // Update player position
-            this.currentTrack = newTrack;
-            this.player.dataset.position = newTrack;
-        }
-    }
-
-    handleKeyPress(e) {
-        if (!this.isGameRunning || this.isPaused) return;
-
-        switch(e.key) {
-            case 'ArrowLeft':
-                if (this.currentTrack > 0) {
-                    this.movePlayer(this.currentTrack - 1);
-                }
-                break;
-            case 'ArrowRight':
-                if (this.currentTrack < 2) {
-                    this.movePlayer(this.currentTrack + 1);
-                }
-                break;
-            case 'Enter':
-                if (this.canAnswer) {
-                    this.checkAnswer(this.currentTrack);
-                }
-                break;
-            case 'Escape':
-                this.togglePause();
-                break;
-        }
-    }
-
     initializeGame() {
         // Initialize tracks
         this.tracks = document.querySelectorAll('.track');
@@ -192,6 +170,8 @@ class SubwayGrammarGame {
         this.streakDisplay = document.getElementById('streak');
         this.levelDisplay = document.getElementById('level');
         this.timerDisplay = document.getElementById('timer').querySelector('span');
+
+        console.log(`Game initialized. Starting at track ${this.currentTrack}`);
     }
 
     initializeGameElements() {
@@ -509,7 +489,7 @@ class SubwayGrammarGame {
             this.currentQuestion = currentLevelQuestions[Math.floor(Math.random() * currentLevelQuestions.length)];
         } else {
             // Select a random question from available questions
-            this.currentQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+            this.currentQuestion = availableQuestions[Math.floor(Math.random() * availableLevelQuestions.length)];
         }
 
         // Track this question
@@ -636,9 +616,63 @@ class SubwayGrammarGame {
             prompt('Copy your score and share it!', shareText);
         }
     }
+
+    movePlayer(newTrack) {
+        console.log(`Attempting to move to track ${newTrack}`);
+        if (newTrack < 0 || newTrack > 2) {
+            console.warn(`Invalid track index: ${newTrack}`);
+            return;
+        }
+
+        if (newTrack >= 0 && newTrack <= 2 && !this.isPaused && this.isGameRunning) {
+            // Remove active class from all tracks
+            this.tracks.forEach(track => track.classList.remove('active'));
+            
+            // Add active class to new track
+            this.tracks[newTrack].classList.add('active');
+            
+            // Update player position
+            this.currentTrack = newTrack;
+            this.player.dataset.position = newTrack;
+            
+            console.log(`Moved to track ${this.currentTrack}`);
+        }
+    }
+
+    handleKeyPress(e) {
+        if (!this.isGameRunning || this.isPaused || !this.canMove) return;
+
+        switch(e.key) {
+            case 'ArrowLeft':
+                if (this.currentTrack > 0) {
+                    console.log(`Moving left from track ${this.currentTrack} to ${this.currentTrack - 1}`);
+                    this.movePlayer(this.currentTrack - 1);
+                    this.canMove = false;
+                    setTimeout(() => this.canMove = true, this.moveCooldown);
+                }
+                break;
+            case 'ArrowRight':
+                if (this.currentTrack < 2) {
+                    console.log(`Moving right from track ${this.currentTrack} to ${this.currentTrack + 1}`);
+                    this.movePlayer(this.currentTrack + 1);
+                    this.canMove = false;
+                    setTimeout(() => this.canMove = true, this.moveCooldown);
+                }
+                break;
+            case 'Enter':
+                if (this.canAnswer) {
+                    this.checkAnswer(this.currentTrack);
+                }
+                break;
+            case 'Escape':
+                this.togglePause();
+                break;
+        }
+    }
 }
 
 // Initialize game when page loads
 window.addEventListener('load', () => {
     new SubwayGrammarGame();
 });
+
