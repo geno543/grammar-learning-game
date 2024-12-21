@@ -601,3 +601,4 @@ class SubwayGrammarGame {
 window.addEventListener('load', () => {
     new SubwayGrammarGame();
 });
+.
