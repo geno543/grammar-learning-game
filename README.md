@@ -1,4 +1,4 @@
-# Grammar Learning Game
+  # Grammar Learning Game
 
 An interactive web-based game to help users learn and practice English grammar concepts. Players move between tracks to select the correct answer while racing against time.
 
@@ -32,6 +32,4 @@ An interactive web-based game to help users learn and practice English grammar c
 - JavaScript (ES6+)
 - Web Audio API
 
-## Live Demo
 
-Visit [https://{your-github-username}.github.io/grammar-game/](https://{your-github-username}.github.io/grammar-game/) to play the game!
