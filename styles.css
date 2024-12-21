@@ -157,7 +157,7 @@ body {
     text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
 }
 
-/* Individual HUD element styles */
+
 #score i { color: #FFD700; }
 #lives i { 
     color: #FF4444; 
