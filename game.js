@@ -1,3 +1,4 @@
+
 class SubwayGrammarGame {
     constructor() {
         // Game state
